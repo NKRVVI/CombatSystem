@@ -190,7 +190,7 @@ void AControlledCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInpu
 
 void AControlledCharacter::MoveForward(const FInputActionValue& input_value)
 {
-	if (action_state != EActionState::EAS_Unoccupied) return;
+	if (action_state != EActionState::EAS_Unoccupied && action_state != EActionState::EAS_Equipping) return;
 
 	const float value = input_value.Get<float>();
 	forward_input = value;
@@ -205,7 +205,7 @@ void AControlledCharacter::MoveForward(const FInputActionValue& input_value)
 
 void AControlledCharacter::MoveRight(const FInputActionValue& input_value)
 {
-	if (action_state != EActionState::EAS_Unoccupied) return;
+	if (action_state != EActionState::EAS_Unoccupied && action_state != EActionState::EAS_Equipping) return;
 	const float value = input_value.Get<float>();
 	right_input = value;
 	if (Controller && value != 0.f)
@@ -297,9 +297,27 @@ void AControlledCharacter::EquipWeapon()
 	AttachWeaponToSocket(socket_names[static_cast<int>(equipped_weapon->GetWeaponType())]);
 }
 
+void AControlledCharacter::GetHealthBoost(float health_boost)
+{
+	if (attributes) {
+		attributes->GetHealthBoost(health_boost);
+		UpdateHealthHUD();
+	}
+}
+
+void AControlledCharacter::GetStaminaBoost(float stamina_boost)
+{
+	if (attributes)
+	{
+		attributes->GetStaminaBoost(stamina_boost);
+		UpdateStaminaHUD();
+	}
+}
+
 void AControlledCharacter::RKeyPressed(const FInputActionValue& input_value)
 {
 	if (!equipped_weapon) return;
+	if (action_state != EActionState::EAS_Unoccupied) return;
 	if (character_weapon_state == ECharacterWeaponState::ESC_Unequipped)
 	{
 		if (equipped_weapon->GetWeaponType() > EWeaponType::EWT_OneHandedWeapon && equipped_shield && character_shield_state == ECharacterShieldState::ECSS_EquippedShield)
@@ -325,6 +343,7 @@ void AControlledCharacter::RKeyPressed(const FInputActionValue& input_value)
 void AControlledCharacter::TKeyPressed(const FInputActionValue& input_value)
 {
 	if (!equipped_shield) return;
+	if (action_state != EActionState::EAS_Unoccupied) return;
 
 	if (character_shield_state == ECharacterShieldState::ECSS_Unequipped)
 	{
@@ -744,6 +763,27 @@ AActor* AControlledCharacter::ReturnClosestEnemy()
 	}
 
 	return closest_enemy;
+}
+
+void AControlledCharacter::SetOverlappingItem(AItem* item)
+{
+	overlapping_item = item;
+	if (overlapping_items.Num() > 0)
+	{
+		overlapping_items[overlapping_items.Num() - 1]->TurnOffUIDisplay();
+	}
+	overlapping_items.AddUnique(item);
+}
+
+void AControlledCharacter::RemoveOverlappingItem(AItem* item)
+{
+	overlapping_items.Remove(item);
+	if (overlapping_items.Num() == 0) overlapping_item = nullptr;
+	else
+	{
+		overlapping_item = overlapping_items[overlapping_items.Num() - 1];
+		overlapping_item->TurnOnUIDisplay();
+	}
 }
 
 AShield* AControlledCharacter::GetEquippedShield() const

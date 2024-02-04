@@ -1,7 +1,7 @@
 // Fill out your copyright notice in the Description page of Project Settings.
 
 
-#include "Spawner.h"
+#include "GameManagers/Spawner.h"
 
 // Sets default values
 ASpawner::ASpawner()

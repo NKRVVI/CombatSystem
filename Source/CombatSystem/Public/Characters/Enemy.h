@@ -10,6 +10,7 @@
 
 class UAnimMontage;
 class UPawnSensingComponent;
+class AEnemyCommander;
 
 UCLASS()
 class COMBATSYSTEM_API AEnemy : public ABaseCharacter
@@ -42,6 +43,7 @@ protected:
 	void Die_Implementation(FVector) override;
 	void HideHealthBar();
 	virtual void UpdateHealthHUD() override;
+	void AlarmCommander(AActor* target);
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
@@ -103,6 +105,9 @@ private:
 
 	UPROPERTY(EditAnywhere, Category = Combat)
 	float death_life_span = 8.f;
+
+	UPROPERTY(EditInstanceOnly)
+	AEnemyCommander* enemy_commander;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -115,4 +120,8 @@ public:
 
 	UFUNCTION(BlueprintCallable)
 	void SetEnemyState(EEnemyState state) { enemy_state = state; }
+
+	void SetCombatTarget(AActor* target);
+
+	void SetEnemyCommander(AEnemyCommander* commander);
 };

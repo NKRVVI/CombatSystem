@@ -27,6 +27,8 @@ public:
 	bool CanUseStamina(float);
 	float GetRollCost();
 	void Respawn();
+	void GetHealthBoost(float health_boost);
+	void GetStaminaBoost(float stamina_boost);
 
 
 protected:

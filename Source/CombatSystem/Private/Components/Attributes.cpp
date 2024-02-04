@@ -88,3 +88,13 @@ void UAttributes::Respawn()
 	health = max_health;
 	stamina = max_stamina;
 }
+
+void UAttributes::GetHealthBoost(float health_boost)
+{
+	health = FMath::Clamp(health + health_boost, 0.f, max_health);
+}
+
+void UAttributes::GetStaminaBoost(float stamina_boost)
+{
+	stamina = FMath::Clamp(stamina + stamina_boost, 0.f, max_stamina);
+}

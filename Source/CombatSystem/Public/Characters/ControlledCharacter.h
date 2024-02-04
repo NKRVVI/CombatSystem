@@ -49,6 +49,9 @@ public:
 	UFUNCTION(BlueprintCallable)
 	void EquipWeapon();
 
+	void GetHealthBoost(float health_boost);
+	void GetStaminaBoost(float stamina_boost);
+
 protected:
 	virtual void BeginPlay() override;
 	void MoveForward(const FInputActionValue& value);
@@ -233,6 +236,8 @@ private:
 
 	class AItem* overlapping_item;
 
+	TArray<AItem*> overlapping_items;
+
 	UPROPERTY(EditDefaultsOnly, Category = Combat)
 	TArray<UAnimMontage*> arm_disarm_montages;
 
@@ -272,7 +277,8 @@ public:
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE void SetActionState(EActionState state) { action_state = state; }
 	
-	FORCEINLINE void SetOverlappingItem(AItem* item) { overlapping_item = item; }	
+	void SetOverlappingItem(AItem* item);
+	void RemoveOverlappingItem(AItem* item);
 
 	UFUNCTION(BlueprintCallable)
 	FORCEINLINE ECharacterWeaponState GetCharacterWeaponState() const { return character_weapon_state; }

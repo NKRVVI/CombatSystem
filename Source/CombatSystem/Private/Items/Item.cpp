@@ -59,7 +59,7 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	IPickupInterface* pickup_interface = Cast<IPickupInterface>(OtherActor);
 	if (pickup_interface) 
 	{
-		pickup_interface->SetOverlappingItem(nullptr);
+		pickup_interface->RemoveOverlappingItem(this);
 		if (GEngine) GEngine->AddOnScreenDebugMessage(6, 3, FColor::Red, FString("End overlap"));
 		TurnOffUIDisplay();
 	}

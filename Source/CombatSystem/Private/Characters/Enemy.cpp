@@ -10,6 +10,7 @@
 #include "Items/Weapons/Weapon.h"
 #include "HUD/HealthBarComponent.h"
 #include "Components/Attributes.h"
+#include "GameManagers/EnemyCommander.h"
 
 // Sets default values
 AEnemy::AEnemy()
@@ -191,8 +192,10 @@ void AEnemy::AttackEnd()
 
 void AEnemy::OnPawnSeen(APawn* seen_pawn)
 {
+	if (seen_pawn->ActorHasTag(FName("Enemy"))) return;
 	if (enemy_state > EEnemyState::EES_Patrolling || IsDead()) return;
 	combat_target = seen_pawn;
+	if (enemy_commander) AlarmCommander(combat_target);
 	ClearPatrolTimer();
 	enemy_state = EEnemyState::EES_Chasing;
 	GetCharacterMovement()->MaxWalkSpeed = chasing_speed;
@@ -233,6 +236,22 @@ void AEnemy::Tick(float DeltaTime)
 void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 {
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
+}
+
+void AEnemy::SetCombatTarget(AActor* seen_pawn)
+{
+	if (seen_pawn->ActorHasTag(FName("Enemy"))) return;
+	if (enemy_state > EEnemyState::EES_Patrolling || IsDead()) return;
+	combat_target = seen_pawn;
+	ClearPatrolTimer();
+	enemy_state = EEnemyState::EES_Chasing;
+	GetCharacterMovement()->MaxWalkSpeed = chasing_speed;
+	MoveToTarget(combat_target);
+}
+
+void AEnemy::SetEnemyCommander(AEnemyCommander* commander)
+{
+	enemy_commander = commander;
 }
 
 void AEnemy::CheckCombatTarget()
@@ -292,4 +311,9 @@ void AEnemy::HideHealthBar()
 void AEnemy::UpdateHealthHUD()
 {
 	if (health_bar_widget && attributes) health_bar_widget->SetHealthPercent(attributes->GetHealthPercent());
+}
+
+void AEnemy::AlarmCommander(AActor* target)
+{
+	enemy_commander->AlarmGroup(target);
 }
