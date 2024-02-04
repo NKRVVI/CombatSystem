@@ -29,7 +29,7 @@ AEnemy::AEnemy()
 
 	pawn_sensing = CreateDefaultSubobject<UPawnSensingComponent>(TEXT("PawnSensing"));
 	pawn_sensing->HearingThreshold = 500.f;
-	pawn_sensing->SightRadius = 4000.f;
+	pawn_sensing->SightRadius = chase_radius;
 	pawn_sensing->SetPeripheralVisionAngle(45.f);
 
 	health_bar_widget = CreateDefaultSubobject<UHealthBarComponent>(TEXT("HealthBar"));
@@ -194,12 +194,30 @@ void AEnemy::OnPawnSeen(APawn* seen_pawn)
 {
 	if (seen_pawn->ActorHasTag(FName("Enemy"))) return;
 	if (enemy_state > EEnemyState::EES_Patrolling || IsDead()) return;
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *UEnum::GetValueAsString(enemy_state));
 	combat_target = seen_pawn;
-	if (enemy_commander) AlarmCommander(combat_target);
+
+	if (enemy_commander && !enemy_commander->IsAlreadyInformed())
+	{
+		PlayRandomMontageSection(alarm_montage);
+		enemy_commander->SetCombatTarget(combat_target);
+		enemy_state = EEnemyState::EES_Alarm;
+		GetCharacterMovement()->MaxWalkSpeed = 0;
+	}
+	else {
+		enemy_state = EEnemyState::EES_Chasing;
+		GetCharacterMovement()->MaxWalkSpeed = chasing_speed;
+		MoveToTarget(combat_target);
+	}
 	ClearPatrolTimer();
-	enemy_state = EEnemyState::EES_Chasing;
-	GetCharacterMovement()->MaxWalkSpeed = chasing_speed;
-	MoveToTarget(combat_target);
+	
+	
+}
+
+void AEnemy::AlarmEnd()
+{
+	AlarmCommander();
+	UE_LOG(LogTemp, Warning, TEXT("ALARM END"));
 }
 
 void AEnemy::MoveToTarget(AActor* target)
@@ -222,11 +240,11 @@ void AEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	if (IsDead()) return;
-	if (enemy_state > EEnemyState::EES_Patrolling)
+	if (enemy_state > EEnemyState::EES_Alarm)
 	{
 		CheckCombatTarget();
 	}
-	else
+	else if(enemy_state <= EEnemyState::EES_Patrolling)
 	{
 		CheckPatrolTarget();
 	}
@@ -240,8 +258,7 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 
 void AEnemy::SetCombatTarget(AActor* seen_pawn)
 {
-	if (seen_pawn->ActorHasTag(FName("Enemy"))) return;
-	if (enemy_state > EEnemyState::EES_Patrolling || IsDead()) return;
+	if (enemy_state > EEnemyState::EES_Alarm || IsDead()) return;
 	combat_target = seen_pawn;
 	ClearPatrolTimer();
 	enemy_state = EEnemyState::EES_Chasing;
@@ -313,7 +330,7 @@ void AEnemy::UpdateHealthHUD()
 	if (health_bar_widget && attributes) health_bar_widget->SetHealthPercent(attributes->GetHealthPercent());
 }
 
-void AEnemy::AlarmCommander(AActor* target)
+void AEnemy::AlarmCommander()
 {
-	enemy_commander->AlarmGroup(target);
+	enemy_commander->AlarmGroup();
 }

@@ -43,7 +43,7 @@ protected:
 	void Die_Implementation(FVector) override;
 	void HideHealthBar();
 	virtual void UpdateHealthHUD() override;
-	void AlarmCommander(AActor* target);
+	void AlarmCommander();
 
 	UFUNCTION(BlueprintCallable)
 	void AttackEnd();
@@ -65,6 +65,12 @@ protected:
 
 	UPROPERTY(VisibleAnywhere)
 	UPawnSensingComponent* pawn_sensing;
+
+	UFUNCTION(BlueprintCallable)
+	void AlarmEnd();
+
+	UPROPERTY(EditDefaultsOnly)
+	UAnimMontage* alarm_montage;
 private:
 
 	void MoveToTarget(AActor* target);

@@ -13,11 +13,11 @@ AEnemyCommander::AEnemyCommander()
 }
 
 
-void AEnemyCommander::AlarmGroup(AActor* target)
+void AEnemyCommander::AlarmGroup()
 {
 	for (AEnemy* enemy : enemy_list)
 	{
-		if (target) enemy->SetCombatTarget(target);
+		if (combat_target) enemy->SetCombatTarget(combat_target);
 	}
 }
 
@@ -29,6 +29,16 @@ void AEnemyCommander::BeginPlay()
 	for (AEnemy* enemy : enemy_list)
 	{
 		enemy->SetEnemyCommander(this);
+	}
+}
+
+void AEnemyCommander::CheckForCombatTarget()
+{
+	AActor* target = nullptr;
+
+	for (AEnemy* enemy : enemy_list)
+	{
+		
 	}
 }
 

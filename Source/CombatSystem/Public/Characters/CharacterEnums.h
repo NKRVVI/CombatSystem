@@ -42,6 +42,7 @@ enum class EEnemyState : uint8
 	EES_Dead UMETA(DisplayName = "Dead"),
 	EES_Unoccupied UMETA(DisplayName = "Unoccupied"),
 	EES_Patrolling UMETA(DisplayName = "Patrolling"),
+	EES_Alarm UMETA(DisplayName = "AlarmTroops"),
 	EES_Chasing UMETA(DisplayName = "Chasing"),
 	EES_Engaged UMETA(DisplayName = "Engaged"),
 	EES_Attacking UMETA(DisplayName = "Attacking")
