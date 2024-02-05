@@ -254,13 +254,13 @@ FVector ABaseCharacter::GetRotationWarpTarget()
 	return FVector();
 }
 
-void ABaseCharacter::EquipWeapon(AWeapon* weapon)
+void ABaseCharacter::TakeWeapon(AWeapon* weapon)
 {
 	SetEquippedWeapon(weapon);
 	AttachWeaponToSocket(socket_names[static_cast<int>(weapon->GetWeaponType())]);
 }
 
-void ABaseCharacter::EquipShield(AShield* shield)
+void ABaseCharacter::TakeShield(AShield* shield)
 {
 	return;
 }

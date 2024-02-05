@@ -25,8 +25,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 	void PlayAttackMontage();
-	virtual void EquipWeapon(class AWeapon* weapon);
-	virtual void EquipShield(class AShield* shield);
+	virtual void TakeWeapon(class AWeapon* weapon);
+	virtual void TakeShield(class AShield* shield);
 	virtual float TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser) override;
 
 	UFUNCTION(BlueprintCallable)

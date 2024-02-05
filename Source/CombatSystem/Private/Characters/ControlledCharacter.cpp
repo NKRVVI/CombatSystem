@@ -295,10 +295,30 @@ void AControlledCharacter::AttachShieldToSocket(FName socket_name)
 	if(equipped_shield) AttachMeshToSocket(equipped_shield, socket_name);
 }
 
-void AControlledCharacter::EquipWeapon()
+void AControlledCharacter::ChangeWeaponStateAndSocketToEquipped()
 {
+	character_weapon_state = static_cast<ECharacterWeaponState>(static_cast<int>(equipped_weapon->GetWeaponType()) + 1);
 	AttachWeaponToSocket(socket_names[static_cast<int>(equipped_weapon->GetWeaponType())]);
 }
+
+void AControlledCharacter::ChangeWeaponStateAndSocketToUnequipped()
+{
+	character_weapon_state = ECharacterWeaponState::ESC_Unequipped;
+	AttachWeaponToSocket(FName("NeckSocket"));
+}
+
+void AControlledCharacter::ChangeShieldStateAndSocketToEquipped()
+{
+	character_shield_state = ECharacterShieldState::ECSS_EquippedShield;
+	AttachShieldToSocket(FName("LeftHandSocket"));
+}
+
+void AControlledCharacter::ChangeShieldAndSocketToUnequipped()
+{
+	character_shield_state = ECharacterShieldState::ECSS_Unequipped;
+	AttachShieldToSocket(FName("ShieldSocket"));
+}
+
 
 void AControlledCharacter::GetHealthBoost(float health_boost)
 {
@@ -321,24 +341,25 @@ void AControlledCharacter::RKeyPressed(const FInputActionValue& input_value)
 {
 	if (!equipped_weapon) return;
 	if (action_state != EActionState::EAS_Unoccupied) return;
+	if (action_mode == EMode::EM_Sprinting) return;
 	if (character_weapon_state == ECharacterWeaponState::ESC_Unequipped)
 	{
 		if (equipped_weapon->GetWeaponType() > EWeaponType::EWT_OneHandedWeapon && equipped_shield && character_shield_state == ECharacterShieldState::ECSS_EquippedShield)
 		{
 			PlayMontageSection(arm_disarm_montages[static_cast<int>(equipped_weapon->GetWeaponType())], FName("UnequipShieldThenEquip"));
-			character_shield_state = ECharacterShieldState::ECSS_Unequipped;
+			//character_shield_state = ECharacterShieldState::ECSS_Unequipped;
 		}
 		else
 		{
 			PlayMontageSection(arm_disarm_montages[static_cast<int>(equipped_weapon->GetWeaponType())], FName("Arm"));
 		}
-		character_weapon_state = static_cast<ECharacterWeaponState>(static_cast<int>(equipped_weapon->GetWeaponType()) + 1);
+		//character_weapon_state = static_cast<ECharacterWeaponState>(static_cast<int>(equipped_weapon->GetWeaponType()) + 1);
 		action_state = EActionState::EAS_Equipping;
 	}
 	else
 	{
 		PlayMontageSection(arm_disarm_montages[static_cast<int>(equipped_weapon->GetWeaponType())], FName("Disarm"));
-		character_weapon_state = ECharacterWeaponState::ESC_Unequipped;
+		//character_weapon_state = ECharacterWeaponState::ESC_Unequipped;
 		action_state = EActionState::EAS_Equipping;
 	}
 }
@@ -347,13 +368,14 @@ void AControlledCharacter::TKeyPressed(const FInputActionValue& input_value)
 {
 	if (!equipped_shield) return;
 	if (action_state != EActionState::EAS_Unoccupied) return;
+	if (action_mode == EMode::EM_Sprinting) return;
 
 	if (character_shield_state == ECharacterShieldState::ECSS_Unequipped)
 	{
 		if (equipped_weapon && character_weapon_state > ECharacterWeaponState::ESC_EquippedOneHandedWeapon)
 		{
 			PlayMontageSection(shield_arm_disarm_montage, FName("UnequipWeaponThenEquip"));
-			character_weapon_state = ECharacterWeaponState::ESC_Unequipped;
+			//character_weapon_state = ECharacterWeaponState::ESC_Unequipped;
 			DisableShieldCollision();
 		}
 		else
@@ -362,12 +384,12 @@ void AControlledCharacter::TKeyPressed(const FInputActionValue& input_value)
 			if (action_mode == EMode::EM_Engaged) EnableShieldCollision();
 		}
 		action_state = EActionState::EAS_Equipping;
-		character_shield_state = ECharacterShieldState::ECSS_EquippedShield;
+		//character_shield_state = ECharacterShieldState::ECSS_EquippedShield;
 	}
 	else
 	{
 		PlayMontageSection(shield_arm_disarm_montage, FName("Disarm"));
-		character_shield_state = ECharacterShieldState::ECSS_Unequipped;
+		//character_shield_state = ECharacterShieldState::ECSS_Unequipped;
 		action_state = EActionState::EAS_Equipping;
 	}
 }
@@ -453,6 +475,7 @@ void AControlledCharacter::Sprint(const FInputActionValue& value)
 {
 	if (mode_conditions.recovering_stamina) return;
 	SetModeToSprinting();
+	UnequipWeapon();
 }
 
 void AControlledCharacter::SprintEnd(const FInputActionValue& value)
@@ -473,8 +496,17 @@ void AControlledCharacter::DurationOfSprint(const FInputActionValue& value)
 {
 	if (UKismetMathLibrary::VSizeXY(GetCharacterMovement()->Velocity) > 0)
 	{
-		UnequipWeapon();
-		UnequipShield();
+		if (action_state == EActionState::EAS_Equipping) return;
+		if (equipped_weapon && character_weapon_state != ECharacterWeaponState::ESC_Unequipped)
+		{
+			ChangeWeaponStateAndSocketToUnequipped();
+		}
+		if (equipped_shield && character_shield_state != ECharacterShieldState::ECSS_Unequipped)
+		{
+			ChangeShieldAndSocketToUnequipped();
+		}
+
+		//UnequipShield();
 	}
 }
 
@@ -517,9 +549,9 @@ float AControlledCharacter::TakeDamage(float DamageAmount, FDamageEvent const& D
 	return DamageAmount;
 }
 
-void AControlledCharacter::EquipWeapon(AWeapon* weapon)
+void AControlledCharacter::TakeWeapon(AWeapon* weapon)
 {
-	Super::EquipWeapon(weapon);
+	Super::TakeWeapon(weapon);
 
 	SetCharacterWeaponState(static_cast<ECharacterWeaponState>(static_cast<int>(weapon->GetWeaponType()) + 1));
 
@@ -530,9 +562,9 @@ void AControlledCharacter::EquipWeapon(AWeapon* weapon)
 	}
 }
 
-void AControlledCharacter::EquipShield(AShield* shield)
+void AControlledCharacter::TakeShield(AShield* shield)
 {
-	Super::EquipShield(shield);
+	Super::TakeShield(shield);
 
 	AttachMeshToSocket(shield, FName("LeftHandSocket"));
 	SetCharacterShieldState(ECharacterShieldState::ECSS_EquippedShield);
@@ -548,8 +580,8 @@ void AControlledCharacter::UnequipWeapon()
 {
 	if (equipped_weapon && character_weapon_state != ECharacterWeaponState::ESC_Unequipped)
 	{
-		AttachWeaponToSocket(FName("NeckSocket"));
-		character_weapon_state = ECharacterWeaponState::ESC_Unequipped;
+		PlayMontageSection(arm_disarm_montages[static_cast<int>(equipped_weapon->GetWeaponType())], FName("Disarm"));
+		action_state = EActionState::EAS_Equipping;
 	}
 }
 
@@ -557,9 +589,14 @@ void AControlledCharacter::UnequipShield()
 {
 	if (equipped_shield && character_shield_state != ECharacterShieldState::ECSS_Unequipped)
 	{
-		AttachShieldToSocket(FName("ShieldSocket"));
-		character_shield_state = ECharacterShieldState::ECSS_Unequipped;
+		PlayMontageSection(shield_arm_disarm_montage, FName("Disarm"));
+		action_state = EActionState::EAS_Equipping;
 	}
+}
+
+void AControlledCharacter::UnequipShieldIfSprinting()
+{
+	if (action_mode == EMode::EM_Sprinting) UnequipShield();
 }
 
 void AControlledCharacter::UpdateHealthHUD()

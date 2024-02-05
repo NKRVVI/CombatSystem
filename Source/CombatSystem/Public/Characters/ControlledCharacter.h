@@ -47,7 +47,16 @@ public:
 	void AttachShieldToSocket(FName socket_name);
 
 	UFUNCTION(BlueprintCallable)
-	void EquipWeapon();
+	void ChangeWeaponStateAndSocketToEquipped();
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeWeaponStateAndSocketToUnequipped();
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeShieldStateAndSocketToEquipped();
+
+	UFUNCTION(BlueprintCallable)
+	void ChangeShieldAndSocketToUnequipped();
 
 	void GetHealthBoost(float health_boost);
 	void GetStaminaBoost(float stamina_boost);
@@ -71,10 +80,14 @@ protected:
 	void DurationOfSprint(const FInputActionValue& value);
 	void Roll(const FInputActionValue& value);
 	void ToggleControlsDisplay(const FInputActionValue& value);
-	virtual void EquipWeapon(AWeapon* weapon) override;
-	virtual void EquipShield(AShield* shield) override;
+	virtual void TakeWeapon(AWeapon* weapon) override;
+	virtual void TakeShield(AShield* shield) override;
 	void UnequipWeapon();
 	void UnequipShield();
+
+	UFUNCTION(BlueprintCallable)
+	void UnequipShieldIfSprinting();
+
 	virtual void UpdateHealthHUD() override;
 	void UpdateShadowHealthHUD();
 	void ShowHealthRise(float health_increment);

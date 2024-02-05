@@ -44,7 +44,7 @@ void AShield::GetEquipped(ABaseCharacter* actor)
 	SetOwner(Cast<AActor>(actor));
 	DisableSphereCollision();
 	//shield_box->SetupAttachment(GetOwner()->GetRootComponent());
-	actor->EquipShield(this);
+	actor->TakeShield(this);
 	TurnOffUIDisplay();
 
 	SetEquippedCollision();

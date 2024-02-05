@@ -115,7 +115,7 @@ void AWeapon::GetEquipped(ABaseCharacter* actor)
 	SetOwner(actor);
 	SetInstigator(actor);
 	DisableSphereCollision();
-	actor->EquipWeapon(this);
+	actor->TakeWeapon(this);
 }
 
 void AWeapon::GetUnequipped()

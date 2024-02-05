@@ -34,14 +34,14 @@ void UControlledCharacterOverlay::NativeTick(const FGeometry& MyGeometry, float 
 
 	if (shall_follow_health_bar)
 	{
-		float target_percentage = FMath::FInterpTo(ShadowHealthBar->Percent, HealthBar->Percent, GetWorld()->GetDeltaSeconds(), follow_bar_interp_rate);
+		float target_percentage = FMath::FInterpConstantTo(ShadowHealthBar->Percent, HealthBar->Percent, GetWorld()->GetDeltaSeconds(), follow_bar_interp_rate);
 		ShadowHealthBar->SetPercent(target_percentage);
 
 		if (FMath::IsNearlyEqual(target_percentage, HealthBar->Percent)) shall_follow_health_bar = false;
 	}
 	else if(shall_follow_shadow_health_bar)
 	{
-		float target_percentage = FMath::FInterpTo(HealthBar->Percent, ShadowHealthBar->Percent, GetWorld()->GetDeltaSeconds(), follow_bar_interp_rate);
+		float target_percentage = FMath::FInterpConstantTo(HealthBar->Percent, ShadowHealthBar->Percent, GetWorld()->GetDeltaSeconds(), follow_bar_interp_rate);
 		HealthBar->SetPercent(target_percentage);
 
 		if (FMath::IsNearlyEqual(target_percentage, ShadowHealthBar->Percent)) shall_follow_shadow_health_bar = false;
