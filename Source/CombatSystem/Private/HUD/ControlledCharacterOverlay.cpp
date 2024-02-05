@@ -31,6 +31,21 @@ void UControlledCharacterOverlay::NativeTick(const FGeometry& MyGeometry, float 
 
 		if (FMath::IsNearlyZero(target_opacity)) is_stamina_incremented = false;
 	}
+
+	if (shall_follow_health_bar)
+	{
+		float target_percentage = FMath::FInterpTo(ShadowHealthBar->Percent, HealthBar->Percent, GetWorld()->GetDeltaSeconds(), follow_bar_interp_rate);
+		ShadowHealthBar->SetPercent(target_percentage);
+
+		if (FMath::IsNearlyEqual(target_percentage, HealthBar->Percent)) shall_follow_health_bar = false;
+	}
+	else if(shall_follow_shadow_health_bar)
+	{
+		float target_percentage = FMath::FInterpTo(HealthBar->Percent, ShadowHealthBar->Percent, GetWorld()->GetDeltaSeconds(), follow_bar_interp_rate);
+		HealthBar->SetPercent(target_percentage);
+
+		if (FMath::IsNearlyEqual(target_percentage, ShadowHealthBar->Percent)) shall_follow_shadow_health_bar = false;
+	}
 }
 
 void UControlledCharacterOverlay::SetHealthPercent(float percent)
@@ -39,6 +54,11 @@ void UControlledCharacterOverlay::SetHealthPercent(float percent)
 	{
 		HealthBar->SetPercent(percent);
 	}
+}
+
+void UControlledCharacterOverlay::SetShadowHealthPercent(float percent)
+{
+	if (ShadowHealthBar) ShadowHealthBar->SetPercent(percent);
 }
 
 void UControlledCharacterOverlay::SetStaminaPercent(float percent)
@@ -120,4 +140,31 @@ void UControlledCharacterOverlay::ShowStaminaIncrement(float increment)
 		StaminaIncrementText->SetRenderOpacity(1);
 		is_stamina_incremented = true;
 	}
+}
+
+void UControlledCharacterOverlay::FollowHealthBar()
+{
+	GetWorld()->GetTimerManager().SetTimer(shadow_health_bar_follow_timer, this, &UControlledCharacterOverlay::StartFollowHealthBar, shadow_health_bar_follow_delay);
+}
+
+void UControlledCharacterOverlay::FollowShadowHealthBar()
+{
+	GetWorld()->GetTimerManager().SetTimer(shadow_health_bar_follow_timer, this, &UControlledCharacterOverlay::StartFollowShadowHealthBar, shadow_health_bar_follow_delay);
+}
+
+void UControlledCharacterOverlay::SetShadowHealthBarToHealthBar()
+{
+	if (ShadowHealthBar && HealthBar) ShadowHealthBar->SetPercent(HealthBar->Percent);
+}
+
+void UControlledCharacterOverlay::StartFollowHealthBar()
+{
+	shall_follow_health_bar = true;
+	shall_follow_shadow_health_bar = false;
+}
+
+void UControlledCharacterOverlay::StartFollowShadowHealthBar()
+{
+	shall_follow_shadow_health_bar = true;
+	shall_follow_health_bar = false;
 }

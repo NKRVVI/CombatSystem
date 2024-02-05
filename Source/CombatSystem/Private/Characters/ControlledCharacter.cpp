@@ -303,7 +303,7 @@ void AControlledCharacter::GetHealthBoost(float health_boost)
 {
 	if (attributes) {
 		attributes->GetHealthBoost(health_boost);
-		AnimateHealthHUD(health_boost);
+		ShowHealthRise(health_boost);
 	}
 }
 
@@ -511,6 +511,7 @@ void AControlledCharacter::BlockAttack()
 float AControlledCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
+	ShowHealthFall(-DamageAmount);
 
 	return DamageAmount;
 }
@@ -565,11 +566,23 @@ void AControlledCharacter::UpdateHealthHUD()
 	if (hud_overlay && attributes) hud_overlay->SetHealthPercent(attributes->GetHealthPercent());
 }
 
-void AControlledCharacter::AnimateHealthHUD(float health_change)
+void AControlledCharacter::UpdateShadowHealthHUD()
+{
+	if (hud_overlay && attributes) hud_overlay->SetShadowHealthPercent(attributes->GetHealthPercent());
+}
+
+void AControlledCharacter::ShowHealthRise(float health_increment)
+{
+	UpdateShadowHealthHUD();
+	ShowHealthIncrement(health_increment);
+	FollowShadowHealthBar();
+}
+
+void AControlledCharacter::ShowHealthFall(float health_decrement)
 {
 	UpdateHealthHUD();
-	ShowHealthIncrement(health_change);
-	
+	ShowHealthIncrement(health_decrement);
+	FollowHealthBar();
 }
 
 void AControlledCharacter::AnimateStaminaHUD(float stamina_change)
@@ -743,6 +756,16 @@ void AControlledCharacter::ShowHealthIncrement(float health_change)
 void AControlledCharacter::ShowStaminaIncrement(float stamina_change)
 {
 	if (hud_overlay) hud_overlay->ShowStaminaIncrement(stamina_change);
+}
+
+void AControlledCharacter::FollowHealthBar()
+{
+	if (hud_overlay) hud_overlay->FollowHealthBar();
+}
+
+void AControlledCharacter::FollowShadowHealthBar()
+{
+	if (hud_overlay) hud_overlay->FollowShadowHealthBar();
 }
 
 void AControlledCharacter::OnAttackSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
