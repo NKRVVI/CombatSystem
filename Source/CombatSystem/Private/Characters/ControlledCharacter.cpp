@@ -588,7 +588,7 @@ void AControlledCharacter::ShowHealthFall(float health_decrement)
 
 void AControlledCharacter::AnimateStaminaHUD(float stamina_change)
 {
-	UpdateHealthHUD();
+	UpdateStaminaHUD();
 	ShowStaminaIncrement(stamina_change);
 }
 

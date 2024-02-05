@@ -136,7 +136,8 @@ void UControlledCharacterOverlay::ShowStaminaIncrement(float increment)
 {
 	if (StaminaIncrementText)
 	{
-		StaminaIncrementText->SetText(FText::FromString(FString("+") + FString::SanitizeFloat(increment)));
+		FString prefix((increment >= 0) ? "+" : "");
+		StaminaIncrementText->SetText(FText::FromString(prefix + FString::SanitizeFloat(increment)));
 		StaminaIncrementText->SetRenderOpacity(1);
 		is_stamina_incremented = true;
 	}

@@ -72,9 +72,6 @@ private:
 	UProgressBar* StaminaBar;
 
 	UPROPERTY(meta = (BindWidget))
-	UProgressBar* ShadowStaminaBar;
-
-	UPROPERTY(meta = (BindWidget))
 	UVerticalBox* ControlsDisplay;
 
 	UPROPERTY(meta = (BindWidget))
