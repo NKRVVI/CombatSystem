@@ -303,7 +303,7 @@ void AControlledCharacter::GetHealthBoost(float health_boost)
 {
 	if (attributes) {
 		attributes->GetHealthBoost(health_boost);
-		UpdateHealthHUD();
+		AnimateHealthHUD(health_boost);
 	}
 }
 
@@ -312,7 +312,7 @@ void AControlledCharacter::GetStaminaBoost(float stamina_boost)
 	if (attributes)
 	{
 		attributes->GetStaminaBoost(stamina_boost);
-		UpdateStaminaHUD();
+		AnimateStaminaHUD(stamina_boost);
 	}
 }
 
@@ -565,6 +565,19 @@ void AControlledCharacter::UpdateHealthHUD()
 	if (hud_overlay && attributes) hud_overlay->SetHealthPercent(attributes->GetHealthPercent());
 }
 
+void AControlledCharacter::AnimateHealthHUD(float health_change)
+{
+	UpdateHealthHUD();
+	ShowHealthIncrement(health_change);
+	
+}
+
+void AControlledCharacter::AnimateStaminaHUD(float stamina_change)
+{
+	UpdateHealthHUD();
+	ShowStaminaIncrement(stamina_change);
+}
+
 void AControlledCharacter::Die_Implementation(FVector impact_point)
 {
 	Super::Die_Implementation(impact_point);
@@ -720,6 +733,16 @@ void AControlledCharacter::SetOverlappingItemUI()
 		overlapping_item = closest_item;
 		overlapping_item->TurnOnUIDisplay();
 	}
+}
+
+void AControlledCharacter::ShowHealthIncrement(float health_change)
+{
+	if (hud_overlay) hud_overlay->ShowHealthIncrement(health_change);
+}
+
+void AControlledCharacter::ShowStaminaIncrement(float stamina_change)
+{
+	if (hud_overlay) hud_overlay->ShowStaminaIncrement(stamina_change);
 }
 
 void AControlledCharacter::OnAttackSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

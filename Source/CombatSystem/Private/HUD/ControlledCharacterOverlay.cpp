@@ -5,6 +5,9 @@
 #include "Components/ProgressBar.h"
 #include "Components/VerticalBox.h"
 #include "Components/Image.h"
+#include "Components/TextBlock.h"
+#include "Kismet/KismetTextLibrary.h"
+
 
 void UControlledCharacterOverlay::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
 {
@@ -12,6 +15,21 @@ void UControlledCharacterOverlay::NativeTick(const FGeometry& MyGeometry, float 
 	{
 		float target_opacity = FMath::FInterpTo(DeathImage->GetRenderOpacity(), 1, GetWorld()->GetDeltaSeconds(), death_screen_appearence_rate);
 		DeathImage->SetRenderOpacity(target_opacity);
+	}
+	
+	if (is_health_incremented)
+	{
+		float target_opacity = FMath::FInterpTo(HealthIncrementText->GetRenderOpacity(), 0, GetWorld()->GetDeltaSeconds(), health_stamina_increment_disappearance_rate);
+		HealthIncrementText->SetRenderOpacity(target_opacity);
+		if (FMath::IsNearlyZero(target_opacity)) is_health_incremented = false;
+	}
+
+	if (is_stamina_incremented)
+	{
+		float target_opacity = FMath::FInterpTo(StaminaIncrementText->GetRenderOpacity(), 0, GetWorld()->GetDeltaSeconds(), health_stamina_increment_disappearance_rate);
+		StaminaIncrementText->SetRenderOpacity(target_opacity);
+
+		if (FMath::IsNearlyZero(target_opacity)) is_stamina_incremented = false;
 	}
 }
 
@@ -81,4 +99,25 @@ void UControlledCharacterOverlay::TurnOnDeathImage()
 void UControlledCharacterOverlay::TurnOffDeathImage()
 {
 	if (DeathImage) DeathImage->SetRenderOpacity(0);
+}
+
+void UControlledCharacterOverlay::ShowHealthIncrement(float increment)
+{
+	
+	if (HealthIncrementText) {
+		FString prefix((increment >= 0) ? "+" : "");
+		HealthIncrementText->SetText(FText::FromString(prefix + FString::SanitizeFloat(increment)));
+		HealthIncrementText->SetRenderOpacity(1);
+		is_health_incremented = true;
+	}
+}
+
+void UControlledCharacterOverlay::ShowStaminaIncrement(float increment)
+{
+	if (StaminaIncrementText)
+	{
+		StaminaIncrementText->SetText(FText::FromString(FString("+") + FString::SanitizeFloat(increment)));
+		StaminaIncrementText->SetRenderOpacity(1);
+		is_stamina_incremented = true;
+	}
 }

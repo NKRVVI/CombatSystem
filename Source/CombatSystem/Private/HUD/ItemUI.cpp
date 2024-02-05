@@ -2,3 +2,9 @@
 
 
 #include "HUD/ItemUI.h"
+#include "Components/TextBlock.h"
+
+void UItemUI::SetItemName(FText name)
+{
+	if (ItemNameText) ItemNameText->SetText(name);
+}

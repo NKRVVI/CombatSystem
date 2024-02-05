@@ -41,6 +41,8 @@ void AItem::BeginPlay()
 	else {
 		SetUnequippedCollision();
 	}
+
+	if (item_ui_widget) item_ui_widget->SetNameText(item_name);
 }
 
 void AItem::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)

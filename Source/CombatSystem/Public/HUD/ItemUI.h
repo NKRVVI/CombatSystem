@@ -12,8 +12,9 @@ UCLASS()
 class COMBATSYSTEM_API UItemUI : public UUserWidget
 {
 	GENERATED_BODY()
-
+public:
+	void SetItemName(FText name);
 private:
 	UPROPERTY(meta = (BindWidget))
-	UHorizontalBox* ItemUIBox;
+	class UTextBlock* ItemNameText;
 };

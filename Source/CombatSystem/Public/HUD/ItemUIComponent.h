@@ -12,7 +12,8 @@ UCLASS()
 class COMBATSYSTEM_API UItemUIComponent : public UWidgetComponent
 {
 	GENERATED_BODY()
-
+public:
+	void SetNameText(FText name);
 private:
 	UPROPERTY()
 	UItemUI* item_ui;

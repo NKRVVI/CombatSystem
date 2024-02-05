@@ -76,6 +76,8 @@ protected:
 	void UnequipWeapon();
 	void UnequipShield();
 	virtual void UpdateHealthHUD() override;
+	void AnimateHealthHUD(float health_change);
+	void AnimateStaminaHUD(float stamina_change);
 	virtual void Die_Implementation(FVector) override;
 	void DisableShieldCollision();
 	void EnableShieldCollision();
@@ -95,6 +97,8 @@ protected:
 	void ReloadLevel();
 	void SetDeathScreen();
 	void SetOverlappingItemUI();
+	void ShowHealthIncrement(float health_change);
+	void ShowStaminaIncrement(float stamina_change);
 
 	UFUNCTION()
 	virtual void OnAttackSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
