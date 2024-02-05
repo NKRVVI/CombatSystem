@@ -157,6 +157,8 @@ void AControlledCharacter::Tick(float DeltaTime)
 		}
 
 	}
+
+	SetOverlappingItemUI();
 }
 
 // Called to bind functionality to input
@@ -701,6 +703,25 @@ void AControlledCharacter::SetDeathScreen()
 	if (hud_overlay) hud_overlay->TurnOnDeathImage();
 }
 
+void AControlledCharacter::SetOverlappingItemUI()
+{
+	if (overlapping_item) overlapping_item->TurnOffUIDisplay();
+	float distance = INFINITY;
+	AItem* closest_item = nullptr;
+	for (AItem* item : overlapping_items)
+	{
+		if ((item->GetActorLocation() - GetActorLocation()).Size() < distance)
+		{
+			closest_item = item;
+			distance = (item->GetActorLocation() - GetActorLocation()).Size();
+		}
+	}
+	if (closest_item) {
+		overlapping_item = closest_item;
+		overlapping_item->TurnOnUIDisplay();
+	}
+}
+
 void AControlledCharacter::OnAttackSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	if (OtherActor->ActorHasTag("Dead")) return;
@@ -767,23 +788,12 @@ AActor* AControlledCharacter::ReturnClosestEnemy()
 
 void AControlledCharacter::SetOverlappingItem(AItem* item)
 {
-	overlapping_item = item;
-	if (overlapping_items.Num() > 0)
-	{
-		overlapping_items[overlapping_items.Num() - 1]->TurnOffUIDisplay();
-	}
 	overlapping_items.AddUnique(item);
 }
 
 void AControlledCharacter::RemoveOverlappingItem(AItem* item)
 {
 	overlapping_items.Remove(item);
-	if (overlapping_items.Num() == 0) overlapping_item = nullptr;
-	else
-	{
-		overlapping_item = overlapping_items[overlapping_items.Num() - 1];
-		overlapping_item->TurnOnUIDisplay();
-	}
 }
 
 AShield* AControlledCharacter::GetEquippedShield() const

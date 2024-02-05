@@ -50,7 +50,6 @@ void AItem::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	{
 		pickup_interface->SetOverlappingItem(this);
 		if (GEngine) GEngine->AddOnScreenDebugMessage(4, 3, FColor::Red, FString("Start overlap"));
-		TurnOnUIDisplay();
 	}
 }
 
@@ -61,7 +60,6 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 	{
 		pickup_interface->RemoveOverlappingItem(this);
 		if (GEngine) GEngine->AddOnScreenDebugMessage(6, 3, FColor::Red, FString("End overlap"));
-		TurnOffUIDisplay();
 	}
 }
 
