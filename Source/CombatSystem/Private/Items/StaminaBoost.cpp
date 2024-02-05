@@ -4,6 +4,7 @@
 #include "Items/StaminaBoost.h"
 #include "Characters/BaseCharacter.h"
 #include "Characters/ControlledCharacter.h"
+#include "Interfaces/PickupInterface.h"
 
 void AStaminaBoost::GetEquipped(ABaseCharacter* character)
 {

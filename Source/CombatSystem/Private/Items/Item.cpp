@@ -67,7 +67,7 @@ void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor*
 
 void AItem::GetEquipped(ABaseCharacter* actor)
 {
-	Destroy();
+	if (IPickupInterface* interface = Cast<IPickupInterface>(actor)) interface->RemoveOverlappingItem(this);
 }
 
 // Called every frame

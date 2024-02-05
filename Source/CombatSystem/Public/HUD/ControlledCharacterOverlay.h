@@ -49,7 +49,6 @@ private:
 	bool is_stamina_incremented = false;
 	bool shall_follow_health_bar = false;
 	bool shall_follow_shadow_health_bar = false;
-	bool shall_follow_stamina_bar = false;
 
 	UPROPERTY(EditAnywhere)
 	float flash_rate = 10;

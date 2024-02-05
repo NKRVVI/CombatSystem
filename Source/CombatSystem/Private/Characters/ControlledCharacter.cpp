@@ -159,6 +159,7 @@ void AControlledCharacter::Tick(float DeltaTime)
 	}
 
 	SetOverlappingItemUI();
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *FString::SanitizeFloat(overlapping_items.Num()));
 }
 
 // Called to bind functionality to input
@@ -742,10 +743,9 @@ void AControlledCharacter::SetOverlappingItemUI()
 			distance = (item->GetActorLocation() - GetActorLocation()).Size();
 		}
 	}
-	if (closest_item) {
-		overlapping_item = closest_item;
-		overlapping_item->TurnOnUIDisplay();
-	}
+
+	overlapping_item = closest_item;
+	if (overlapping_item) overlapping_item->TurnOnUIDisplay();
 }
 
 void AControlledCharacter::ShowHealthIncrement(float health_change)
