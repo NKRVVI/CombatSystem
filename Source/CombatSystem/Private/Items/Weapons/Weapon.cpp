@@ -63,6 +63,7 @@ void AWeapon::BeginPlay()
 	//ghost_weapon_box->OnComponentBeginOverlap.AddDynamic(this, &AWeapon::OnGhostBoxOverlap);
 }
 
+// if collision occurs during the attack, this function is called to check whether damage can be applied
 void AWeapon::OnBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 
@@ -87,6 +88,7 @@ void AWeapon::OnGhostBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor
 	//if (OtherActor->ActorHasTag(FName("ShieldBox"))) ignored_actors.AddUnique(OtherActor->GetOwner());
 }
 
+// box trace
 void AWeapon::BoxTrace(FHitResult& box_hit)
 {
 	FVector start_pos = box_trace_start->GetComponentLocation();

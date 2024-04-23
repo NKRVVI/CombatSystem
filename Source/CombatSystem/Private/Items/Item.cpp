@@ -45,6 +45,7 @@ void AItem::BeginPlay()
 	if (item_ui_widget) item_ui_widget->SetNameText(item_name);
 }
 
+// if when this overlap occurs, the player is able to pick up this item
 void AItem::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	IPickupInterface* pickup_interface = Cast<IPickupInterface>(OtherActor);
@@ -55,6 +56,7 @@ void AItem::OnSphereBeginOverlap(UPrimitiveComponent* OverlappedComponent, AActo
 	}
 }
 
+// when this overlap ends, this player is unable to pick up the item
 void AItem::OnSphereEndOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
 {
 	IPickupInterface* pickup_interface = Cast<IPickupInterface>(OtherActor);

@@ -27,6 +27,7 @@ void AShield::BeginPlay()
 	shield_box->OnComponentBeginOverlap.AddDynamic(this, &AShield::OnShieldBoxOverlap);
 }
 
+// when this collision happens, the player is added to the ignored actors tarray, so the hit will not count
 void AShield::OnShieldBoxOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 	AWeapon* weapon = Cast<AWeapon>(OtherActor);

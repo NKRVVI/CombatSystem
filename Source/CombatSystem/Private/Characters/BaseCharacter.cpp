@@ -21,6 +21,9 @@ ABaseCharacter::ABaseCharacter()
 	attributes = CreateDefaultSubobject<UAttributes>(TEXT("Attributes"));
 }
 
+/*
+	function overriden from the IHitInterface class. Handles getting hit by a weapon
+*/
 void ABaseCharacter::GetHit(AActor* hitter, AWeapon* weapon, FVector impact_point)
 {
 	//if (GEngine) GEngine->AddOnScreenDebugMessage(1, 10, FColor::Black, FString("Get hit"));
@@ -45,7 +48,7 @@ void ABaseCharacter::BeginPlay()
 	Super::BeginPlay();
 	
 }
-
+//function to play a section from an animation montage
 void ABaseCharacter::PlayMontageSection(UAnimMontage* montage, FName section)
 {
 	UAnimInstance* anim_instance = GetMesh()->GetAnimInstance();
@@ -54,7 +57,7 @@ void ABaseCharacter::PlayMontageSection(UAnimMontage* montage, FName section)
 		anim_instance->Montage_JumpToSection(section, montage);
 	}
 }
-
+ // function to play a random section from a montage
 void ABaseCharacter::PlayRandomMontageSection(UAnimMontage* montage)
 {
 	if (!montage) return;
@@ -65,6 +68,7 @@ void ABaseCharacter::PlayRandomMontageSection(UAnimMontage* montage)
 	PlayMontageSection(montage, random_section_name);
 }
 
+// plays the appropriate hitreactmontage section depending when the hit is coming from
 void ABaseCharacter::PlayHitReactMontage(FVector impact_point)
 {
 	double theta = GetDirectionalTheta(impact_point);
@@ -87,6 +91,7 @@ void ABaseCharacter::PlayHitReactMontage(FVector impact_point)
 	PlayMontageSection(hit_react_montage, section);
 }
 
+// plays the appropriate deathmontage section depending on where the hit is coming from
 void ABaseCharacter::PlayDyingMontage(FVector impact_point)
 {
 	if (!death_montage) return;
@@ -111,6 +116,7 @@ void ABaseCharacter::PlayDyingMontage(FVector impact_point)
 	PlayMontageSection(death_montage, death_montage_section);
 }
 
+//get the appropriate section name to play when getting hit
 FName ABaseCharacter::GetDirectionMontageSection(FVector impact_point)
 {
 	double theta = GetDirectionalTheta(impact_point);
@@ -133,6 +139,7 @@ FName ABaseCharacter::GetDirectionMontageSection(FVector impact_point)
 	return section;
 }
 
+// stops the attack montage
 void ABaseCharacter::StopAttackMontage()
 {
 	if (!equipped_weapon) return;
@@ -143,6 +150,7 @@ void ABaseCharacter::StopAttackMontage()
 	}
 }
 
+//stops the dying montage
 void ABaseCharacter::StopDyingMontage()
 {
 	UAnimInstance* anim_instance = GetMesh()->GetAnimInstance();
@@ -152,20 +160,24 @@ void ABaseCharacter::StopDyingMontage()
 	}
 }
 
+// warps to the target when attacking
 void ABaseCharacter::WarpToTarget()
 {
 	if (combat_target && motion_warping && WithinDistanceFromTarget(combat_target, attack_radius))
 	{
 		motion_warping->AddOrUpdateWarpTargetFromLocation(FName("TranslationTarget"), GetTranslationWarpTarget());
 		motion_warping->AddOrUpdateWarpTargetFromLocation(FName("RotationTarget"), GetRotationWarpTarget());
+		//if (debug) UE_LOG(LogTemp, Warning, TEXT("Found combat target"));
 	}
 	else
 	{
 		motion_warping->RemoveWarpTarget(FName("TranslationTarget"));
 		motion_warping->RemoveWarpTarget(FName("RotationTarget"));
+		//if (debug) UE_LOG(LogTemp, Warning, TEXT("No combat target"));
 	}
 }
 
+//get the angle between the attacker and the attackee
 double ABaseCharacter::GetDirectionalTheta(FVector impact_point)
 {
 	FVector impact_point_lowered = FVector(impact_point.X, impact_point.Y, GetActorLocation().Z);
@@ -182,6 +194,8 @@ double ABaseCharacter::GetDirectionalTheta(FVector impact_point)
 
 	return theta;
 }
+
+// function that handles death
 void ABaseCharacter::Die_Implementation(FVector impact_point)
 {
 	PlayDyingMontage(impact_point);
@@ -225,14 +239,17 @@ void ABaseCharacter::ReceiveDamage(float damage)
 	if (attributes) attributes->ReceiveDamage(damage);
 }
 
+// does the attack action
 void ABaseCharacter::Attack(const FInputActionValue& value)
 {
 	if (combat_target && combat_target->ActorHasTag(FName("Dead")))
 	{
 		combat_target = nullptr;
+		if (debug) UE_LOG(LogTemp, Warning, TEXT("[Attack] combat target set to nullptr"));
 	}
 }
 
+// get the target when the motion warping is in translation mode
 FVector ABaseCharacter::GetTranslationWarpTarget()
 {
 	if (combat_target == nullptr) return FVector();
@@ -244,7 +261,7 @@ FVector ABaseCharacter::GetTranslationWarpTarget()
 	target_to_me *= warp_target_distance;
 	return combat_target_location + target_to_me;
 }
-
+ //gets the target when the motion warping is in rotation mode
 FVector ABaseCharacter::GetRotationWarpTarget()
 {
 	if (combat_target)
@@ -254,17 +271,20 @@ FVector ABaseCharacter::GetRotationWarpTarget()
 	return FVector();
 }
 
+// takes weapon from the ground
 void ABaseCharacter::TakeWeapon(AWeapon* weapon)
 {
 	SetEquippedWeapon(weapon);
 	AttachWeaponToSocket(socket_names[static_cast<int>(weapon->GetWeaponType())]);
 }
 
+//takes shield from the ground
 void ABaseCharacter::TakeShield(AShield* shield)
 {
 	return;
 }
 
+// overriden function that handles receiving damage
 float ABaseCharacter::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -289,32 +309,37 @@ void ABaseCharacter::SetupPlayerInputComponent(UInputComponent* PlayerInputCompo
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+// plays attack montage
 void ABaseCharacter::PlayAttackMontage()
 {
 	PlayRandomMontageSection(attack_montages[static_cast<int>(equipped_weapon->GetWeaponType())]);
 }
 
+//attaches weapon to a socket
 void ABaseCharacter::AttachWeaponToSocket(FName socket_name)
 {
 	AttachMeshToSocket(equipped_weapon, socket_name);
-
 }
 
+// sets the weapon box collision
 void ABaseCharacter::SetWeaponBoxCollision(ECollisionEnabled::Type response) 
 {
 	if(equipped_weapon) equipped_weapon->GetWeaponBox()->SetCollisionEnabled(response); 
 }
 
+// enables the weapon box collision so that hits can be generated
 void ABaseCharacter::EnableWeaponBoxCollision()
 {
 	if (equipped_weapon) equipped_weapon->EnableWeaponBoxCollision();
 }
 
+// disables weapon box collision so that hits are not generated when the character is not attacking
 void ABaseCharacter::DisableWeaponBoxCollision()
 {
 	if (equipped_weapon) equipped_weapon->DisableWeaponBoxCollision();
 }
 
+// attaches a mesh to a socket
 void ABaseCharacter::AttachMeshToSocket(AItem* item, FName socket_name)
 {
 	item->AttachMeshToSocket(GetMesh(), socket_name);
@@ -327,6 +352,7 @@ bool ABaseCharacter::WithinDistanceFromTarget(AActor* target, float radius)
 	return UKismetMathLibrary::VSizeXY(GetActorLocation() - target->GetActorLocation()) <= radius;
 }
 
+// plays the appropriate hit sound according to weapon type
 void ABaseCharacter::PlayHitSound(const FVector& impact_point, EWeaponDamageType type)
 {
 	if (hit_sounds[static_cast<int>(type)])

@@ -12,7 +12,7 @@ AEnemyCommander::AEnemyCommander()
 
 }
 
-
+// set the player as the combat target for every member of the enemy group
 void AEnemyCommander::AlarmGroup()
 {
 	for (AEnemy* enemy : enemy_list)

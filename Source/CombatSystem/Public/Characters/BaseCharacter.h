@@ -64,6 +64,9 @@ protected:
 	void PlayPainSound();
 	void SpawnHitParticles(const FVector&);
 
+	UPROPERTY(EditInstanceOnly, BlueprintReadOnly)
+	bool debug = false;
+
 	UFUNCTION(BlueprintCallable)
 	FVector GetTranslationWarpTarget();
 
@@ -87,7 +90,7 @@ protected:
 	UPROPERTY(EditAnywhere, Category = Combat)
 	double warp_target_distance = 75.f;
 
-	UPROPERTY(BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	AActor* combat_target;
 
 	UPROPERTY(BlueprintReadOnly)

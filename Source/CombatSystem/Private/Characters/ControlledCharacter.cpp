@@ -105,8 +105,12 @@ void AControlledCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
+	// to make sure that the character doesn't tilt
 	SetActorRotation(FRotator(0, GetActorRotation().Yaw, 0));
 
+	/*
+		checks if the character is in StaminaRecoveringMode
+	*/
 	if (action_mode == EMode::EM_Sprinting && FVector2D(GetCharacterMovement()->Velocity).Size() > 0 && (action_state == EActionState::EAS_Unoccupied || action_state == EActionState::EAS_Dodging))
 	{
 		attributes->UseStaminaThroughSprint();
@@ -131,16 +135,21 @@ void AControlledCharacter::Tick(float DeltaTime)
 		}
 	}
 
+	// changes the camera transform if character is in engaged mode
 	if (action_mode == EMode::EM_Engaged)
 	{
 		SetEngagedCamera();
 	}
+
 
 	if (mode_conditions.recovering_stamina)
 	{
 		FlashStaminaBar();
 	}
 
+	/*
+	* takes care of the rolling action. rotates to the controller rotation and then rolls
+	*/
 	if (action_state == EActionState::EAS_Rolling && !is_rolling)
 	{
 		UE_LOG(LogTemp, Warning, TEXT("%s"), *target_roll_rotation.ToString());
@@ -251,6 +260,7 @@ void AControlledCharacter::CharacterJump(const FInputActionValue& input_value)
 	}
 }
 
+// takes when if a weapon is nearby
 void AControlledCharacter::EKeyPressed(const FInputActionValue& input_value)
 {
 	if (overlapping_item)
@@ -279,6 +289,7 @@ void AControlledCharacter::Attack(const FInputActionValue& input_value)
 	}
 }
 
+// override from the IHitInterface class to handle getting hit
 void AControlledCharacter::GetHit(AActor* hitter, AWeapon* weapon, FVector impact_point)
 {
 	Super::GetHit(hitter, weapon, impact_point);
@@ -337,6 +348,7 @@ void AControlledCharacter::GetStaminaBoost(float stamina_boost)
 	}
 }
 
+// equip or unequip weapon
 void AControlledCharacter::RKeyPressed(const FInputActionValue& input_value)
 {
 	if (!equipped_weapon) return;
@@ -364,6 +376,7 @@ void AControlledCharacter::RKeyPressed(const FInputActionValue& input_value)
 	}
 }
 
+// equip or unequip shield
 void AControlledCharacter::TKeyPressed(const FInputActionValue& input_value)
 {
 	if (!equipped_shield) return;
@@ -394,6 +407,7 @@ void AControlledCharacter::TKeyPressed(const FInputActionValue& input_value)
 	}
 }
 
+// enter into engaged mode
 void AControlledCharacter::FocusOnEnemy(const FInputActionValue& input_value)
 {
 	if (IsDead()) return;
@@ -403,6 +417,7 @@ void AControlledCharacter::FocusOnEnemy(const FInputActionValue& input_value)
 	combat_target = ReturnClosestEnemy();
 }
 
+// exit from engaged mode
 void AControlledCharacter::UnfocusOnEnemy(const FInputActionValue& input_value)
 {
 	combat_target = nullptr;
@@ -423,6 +438,7 @@ void AControlledCharacter::UnfocusOnEnemy(const FInputActionValue& input_value)
 	if (character_shield_state == ECharacterShieldState::ECSS_EquippedShield) DisableShieldCollision();
 }
 
+//sidestep to the right or left
 void AControlledCharacter::DodgeRight(const FInputActionValue& value)
 {
 	if (action_mode != EMode::EM_Engaged)
@@ -447,6 +463,7 @@ void AControlledCharacter::DodgeRight(const FInputActionValue& value)
 	}
 }
 
+// dash forward or backward
 void AControlledCharacter::DodgeForward(const FInputActionValue& value)
 {
 	if (action_mode != EMode::EM_Engaged)
@@ -638,11 +655,13 @@ void AControlledCharacter::Die_Implementation(FVector impact_point)
 	GetWorldTimerManager().SetTimer(respawn_timer, this, &AControlledCharacter::ReloadLevel, respawn_time);
 }
 
+// disabled shield collision to disallow blocking
 void AControlledCharacter::DisableShieldCollision()
 {
 	if (equipped_shield) equipped_shield->DisableShieldBoxCollision();
 }
 
+// enable shield collision to allow blocking
 void AControlledCharacter::EnableShieldCollision()
 {
 	if (equipped_shield) equipped_shield->EnableShieldBoxCollision();
@@ -653,6 +672,7 @@ void AControlledCharacter::UpdateStaminaHUD()
 	if (hud_overlay && attributes) hud_overlay->SetStaminaPercent(attributes->GetStaminaPercent());
 }
 
+// move that camera to engaged mode
 void AControlledCharacter::SetEngagedCamera()
 {
 	if (GetController()->GetControlRotation() != focused_camera_point->GetComponentRotation())
@@ -736,6 +756,7 @@ void AControlledCharacter::SetStaminaOpacityToFull()
 	if (hud_overlay) hud_overlay->SetStaminaOpacityToFull();
 }
 
+// checks whether the character is able to roll
 bool AControlledCharacter::CanRoll()
 {
 	if (action_mode == EMode::EM_RecoveringStamina) return false;
@@ -767,6 +788,9 @@ void AControlledCharacter::SetDeathScreen()
 	if (hud_overlay) hud_overlay->TurnOnDeathImage();
 }
 
+/*
+	if the character is close to many items, then the closest one is chosen to be equipped when the e key is pressed. So, only that item pickup widget will be activated
+*/
 void AControlledCharacter::SetOverlappingItemUI()
 {
 	if (overlapping_item) overlapping_item->TurnOffUIDisplay();
@@ -795,11 +819,13 @@ void AControlledCharacter::ShowStaminaIncrement(float stamina_change)
 	if (hud_overlay) hud_overlay->ShowStaminaIncrement(stamina_change);
 }
 
+// the shadow health bar follows the health bar
 void AControlledCharacter::FollowHealthBar()
 {
 	if (hud_overlay) hud_overlay->FollowHealthBar();
 }
 
+// the health bar follows the shadow health bar
 void AControlledCharacter::FollowShadowHealthBar()
 {
 	if (hud_overlay) hud_overlay->FollowShadowHealthBar();
@@ -823,6 +849,7 @@ void AControlledCharacter::OnAttackSphereEndOverlap(UPrimitiveComponent* Overlap
 	}
 }
 
+// anim notify called function when hit react ends
 void AControlledCharacter::HitReactEnd()
 {
 	action_state = EActionState::EAS_Unoccupied;
@@ -831,6 +858,7 @@ void AControlledCharacter::HitReactEnd()
 	UE_LOG(LogTemp, Warning, TEXT("Hit react ended"));
 }
 
+// anim notify called function when dodge is ended
 void AControlledCharacter::DodgeEnd()
 {
 	action_state = EActionState::EAS_Unoccupied;
@@ -838,12 +866,14 @@ void AControlledCharacter::DodgeEnd()
 	is_rolling = false;
 }
 
+// anim notify called function when attack is ended
 void AControlledCharacter::AttackEnd()
 {
 	action_state = EActionState::EAS_Unoccupied;
 	if (action_mode == EMode::EM_Engaged && character_shield_state == ECharacterShieldState::ECSS_EquippedShield) EnableShieldCollision();
 }
 
+// returns closest enemy so that the player can be focused on that player in engaged mode
 AActor* AControlledCharacter::ReturnClosestEnemy()
 {
 	for (AActor* enemy : enemies_in_range)

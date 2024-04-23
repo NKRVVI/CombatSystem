@@ -71,6 +71,12 @@ protected:
 
 	UPROPERTY(EditDefaultsOnly)
 	UAnimMontage* alarm_montage;
+
+	UPROPERTY(EditDefaultsOnly)
+	float entry_into_attack_radius = attack_radius;
+
+	UPROPERTY(EditDefaultsOnly)
+	float exit_from_attack_radius = attack_radius * 1.5;
 private:
 
 	void MoveToTarget(AActor* target);

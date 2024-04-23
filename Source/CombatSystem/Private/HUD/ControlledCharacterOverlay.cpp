@@ -11,12 +11,14 @@
 
 void UControlledCharacterOverlay::NativeTick(const FGeometry& MyGeometry, float DeltaTime)
 {
+	//if character is dead, then death screen is turned on
 	if (turn_on_death_screen)
 	{
 		float target_opacity = FMath::FInterpTo(DeathImage->GetRenderOpacity(), 1, GetWorld()->GetDeltaSeconds(), death_screen_appearence_rate);
 		DeathImage->SetRenderOpacity(target_opacity);
 	}
 	
+	// setting the health increment text
 	if (is_health_incremented)
 	{
 		float target_opacity = FMath::FInterpTo(HealthIncrementText->GetRenderOpacity(), 0, GetWorld()->GetDeltaSeconds(), health_stamina_increment_disappearance_rate);
@@ -24,6 +26,7 @@ void UControlledCharacterOverlay::NativeTick(const FGeometry& MyGeometry, float 
 		if (FMath::IsNearlyZero(target_opacity)) is_health_incremented = false;
 	}
 
+	// setting the stamina increment text
 	if (is_stamina_incremented)
 	{
 		float target_opacity = FMath::FInterpTo(StaminaIncrementText->GetRenderOpacity(), 0, GetWorld()->GetDeltaSeconds(), health_stamina_increment_disappearance_rate);
@@ -32,6 +35,7 @@ void UControlledCharacterOverlay::NativeTick(const FGeometry& MyGeometry, float 
 		if (FMath::IsNearlyZero(target_opacity)) is_stamina_incremented = false;
 	}
 
+	// setting the following movement between the shadow health bar and the health bar
 	if (shall_follow_health_bar)
 	{
 		float target_percentage = FMath::FInterpConstantTo(ShadowHealthBar->Percent, HealthBar->Percent, GetWorld()->GetDeltaSeconds(), follow_bar_interp_rate);
@@ -69,6 +73,7 @@ void UControlledCharacterOverlay::SetStaminaPercent(float percent)
 	}
 }
 
+// flashing stamina bar when recovering in health
 void UControlledCharacterOverlay::FlashStaminaBar()
 {
 	if (flash_down)
@@ -93,6 +98,7 @@ void UControlledCharacterOverlay::FlashStaminaBar()
 	}
 }
 
+// used when shifting from recovering stamina mode to standard, opacity of stamina bar is reset
 void UControlledCharacterOverlay::SetStaminaOpacityToFull()
 {
 	if (StaminaBar) StaminaBar->SetRenderOpacity(1.f);

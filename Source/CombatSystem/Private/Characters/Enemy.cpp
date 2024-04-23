@@ -37,6 +37,7 @@ AEnemy::AEnemy()
 
 }
 
+// overridden function from the IHitInterface class
 void AEnemy::GetHit(AActor* hitter, AWeapon* weapon, FVector impact_point)
 {
 	Super::GetHit(hitter, weapon, impact_point);
@@ -51,6 +52,7 @@ void AEnemy::GetHit(AActor* hitter, AWeapon* weapon, FVector impact_point)
 	}
 }
 
+// overridden function that handles taking damage
 float AEnemy::TakeDamage(float DamageAmount, FDamageEvent const& DamageEvent, AController* EventInstigator, AActor* DamageCauser)
 {
 	Super::TakeDamage(DamageAmount, DamageEvent, EventInstigator, DamageCauser);
@@ -80,6 +82,7 @@ void AEnemy::BeginPlay()
 	SpawnDefaultWeapon();
 }
 
+// choosing a patrol target when patrolling
 AActor* AEnemy::ChoosePatrolTarget()
 {
 	TArray<AActor*> rest_of_patrol_targets;
@@ -96,11 +99,13 @@ AActor* AEnemy::ChoosePatrolTarget()
 	return nullptr;
 }
 
+// timer set so that enemy goes to next patrol point after staying a current patrol point for some time
 void AEnemy::StartPatrolTimer()
 {
 	GetWorldTimerManager().SetTimer(patrol_timer, this, &AEnemy::PatrolTimerFinished, FMath::RandRange(patrol_wait_time_min, patrol_wait_time_max));
 }
 
+// starting attack timer
 void AEnemy::StartAttackTimer()
 {
 	enemy_state = EEnemyState::EES_Engaged;
@@ -124,16 +129,19 @@ void AEnemy::Attack()
 	Attack(FInputActionValue());
 }
 
+// clearing patrol timer. This is used when the enemy is exiting from patrol to chasing
 void AEnemy::ClearPatrolTimer()
 {
 	GetWorldTimerManager().ClearTimer(patrol_timer);
 }
 
+// clearing attack timer, used when enemy is hit or is dead
 void AEnemy::ClearAttackTimer()
 {
 	GetWorldTimerManager().ClearTimer(attack_timer);
 }
 
+//anim notify called function when hitreaction has ended
 void AEnemy::HitReactEnd()
 {
 	if (!combat_target) return;
@@ -155,6 +163,7 @@ void AEnemy::HitReactEnd()
 	}
 }
 
+// spawning the weapon in the hands of the opponent
 void AEnemy::SpawnDefaultWeapon()
 {
 	UWorld* world = GetWorld();
@@ -166,6 +175,7 @@ void AEnemy::SpawnDefaultWeapon()
 	}
 }
 
+// checking if patrol target is reached
 void AEnemy::CheckPatrolTarget()
 {
 	if (WithinDistanceFromTarget(current_patrol_target, patrol_radius))
@@ -175,6 +185,7 @@ void AEnemy::CheckPatrolTarget()
 	}
 }
 
+// anim notify called function when attack has ended. If enemy is still in range to opponent, 
 void AEnemy::AttackEnd()
 {
 	if (!combat_target) return;
@@ -189,6 +200,12 @@ void AEnemy::AttackEnd()
 		ChaseCombatTarget();
 	}
 }
+
+/*
+	this function is called when the pawn sensing component has seen a pawn.
+	If the enemy is already not chasing, then the patrol timer is cleared and the enemy starts chasing.
+	also if the enemy commander is not notified, enemy commander is notified
+*/
 
 void AEnemy::OnPawnSeen(APawn* seen_pawn)
 {
@@ -214,12 +231,14 @@ void AEnemy::OnPawnSeen(APawn* seen_pawn)
 	
 }
 
+// anim notify called function when the alarm anim montage has finished playing
 void AEnemy::AlarmEnd()
 {
 	AlarmCommander();
 	UE_LOG(LogTemp, Warning, TEXT("ALARM END"));
 }
 
+// function to move to a target
 void AEnemy::MoveToTarget(AActor* target)
 {
 	if (enemy_controller == nullptr || target == nullptr) return;
@@ -230,6 +249,7 @@ void AEnemy::MoveToTarget(AActor* target)
 	enemy_controller->MoveTo(move_request);
 }
 
+// when enemy has stopped at patrol target for some time, he moves on to the next one
 void AEnemy::PatrolTimerFinished()
 {
 	MoveToTarget(current_patrol_target);
@@ -256,6 +276,7 @@ void AEnemy::SetupPlayerInputComponent(UInputComponent* PlayerInputComponent)
 	Super::SetupPlayerInputComponent(PlayerInputComponent);
 }
 
+// set the player as a combat
 void AEnemy::SetCombatTarget(AActor* seen_pawn)
 {
 	if (enemy_state > EEnemyState::EES_Alarm || IsDead()) return;
@@ -271,6 +292,9 @@ void AEnemy::SetEnemyCommander(AEnemyCommander* commander)
 	enemy_commander = commander;
 }
 
+/*
+	checking the distance from the combat target and acting appropriately
+*/
 void AEnemy::CheckCombatTarget()
 {
 	if (!WithinDistanceFromTarget(combat_target, chase_radius))
@@ -281,8 +305,9 @@ void AEnemy::CheckCombatTarget()
 		GetCharacterMovement()->MaxWalkSpeed = patrolling_speed;
 		MoveToTarget(current_patrol_target);
 		combat_target = nullptr;
+		if (debug) UE_LOG(LogTemp, Warning, TEXT("[CheckCombatTarget 1] combattarget set to nullptr"));
 	}
-	else if (!WithinDistanceFromTarget(combat_target, attack_radius) && enemy_state != EEnemyState::EES_Attacking)
+	else if (!WithinDistanceFromTarget(combat_target, exit_from_attack_radius) && enemy_state != EEnemyState::EES_Attacking)
 	{
 		if (enemy_state != EEnemyState::EES_Chasing) enemy_state = EEnemyState::EES_Chasing;
 		//UE_LOG(LogTemp, Warning, TEXT("[CheckCombatTarget] ClearAttackTimer"));
@@ -290,13 +315,14 @@ void AEnemy::CheckCombatTarget()
 		MoveToTarget(combat_target);
 		GetCharacterMovement()->MaxWalkSpeed = chasing_speed;
 	}
-	else if (enemy_state < EEnemyState::EES_Engaged)
+	else if (enemy_state < EEnemyState::EES_Engaged && WithinDistanceFromTarget(combat_target, entry_into_attack_radius))
 	{
 		//UE_LOG(LogTemp, Warning, TEXT("[CheckCombatTarget] Attack Timer started"));
 		StartAttackTimer();
 	}
 }
 
+// chasing the combat target
 void AEnemy::ChaseCombatTarget()
 {
 	enemy_state = EEnemyState::EES_Chasing;
@@ -330,6 +356,7 @@ void AEnemy::UpdateHealthHUD()
 	if (health_bar_widget && attributes) health_bar_widget->SetHealthPercent(attributes->GetHealthPercent());
 }
 
+// alarming the commander when the player is spotted
 void AEnemy::AlarmCommander()
 {
 	enemy_commander->AlarmGroup();
